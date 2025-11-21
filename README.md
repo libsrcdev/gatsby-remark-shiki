@@ -62,4 +62,4 @@ plugins: [
 
 ## How to contribute
 
-Feel free to file an issue here: https://github.com/jlkiri/gatsby-remark-shiki/issues
+Feel free to file an issue here: https://github.com/libsrcdev/gatsby-remark-shiki/issues

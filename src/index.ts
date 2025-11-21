@@ -1,47 +1,106 @@
-import shiki from 'shiki';
-import { Theme } from 'shiki-themes';
-import { Lang, ILanguageRegistration } from 'shiki-languages';
-import { Node } from 'unist';
-import visit from 'unist-util-visit';
+import { BundledHighlighterOptions, BundledLanguage, BundledTheme, CodeToHastOptions, codeToHtml, createHighlighter, HighlighterGeneric, ResolveBundleKey, ShikiTransformer, StringLiteralUnion, ThemeRegistrationAny } from 'shiki';
+import { Lang } from 'shiki-languages';
+import { Node, Parent } from 'unist';
+import { EXIT, visit } from 'unist-util-visit';
 
-export interface RemarkShikiOptions {
-  theme: Theme;
-  langs?: ILanguageRegistration[];
+
+export type RemarkShikiOptions = {
+	highlighterOptions: BundledHighlighterOptions<BundledLanguage, BundledTheme>,
+	inferLang?: ((snippet: string) => Promise<Lang | undefined>) | string,
+	codeToHtmlOptions: CodeToHastOptions<ResolveBundleKey<Lang>, ResolveBundleKey<BundledTheme>>
 }
 
-export interface RemarkNode extends Node {
-  type: string;
-  value: string;
-  lang: null | Lang;
-}
+export type ThemeRegistration = ThemeRegistrationAny | StringLiteralUnion<BundledTheme>
 
-export default async function(
-  { markdownAST }: any,
-  options: RemarkShikiOptions
+export interface RemarkNode extends Node, Parent {
+	type: string;
+	value: string;
+	lang?: Lang;
+}
+export type ShikiHighlighter = HighlighterGeneric<BundledLanguage, BundledTheme>
+export default async function (
+	{ markdownAST }: any,
+	options: RemarkShikiOptions
 ) {
-  let theme = options.theme || 'nord';
+	let highlighter: ShikiHighlighter | undefined = undefined;
+	const inferLang = options.inferLang
 
-  let highlighter: shiki.Highlighter;
-  try {
-    highlighter = await shiki.getHighlighter({
-      theme,
-      langs: options.langs || [],
-    });
-  } catch (_) {
-    throw new Error('Unable to load theme: ' + theme);
-  }
+	if (options.highlighterOptions) {
+		highlighter = await createHighlighter(options.highlighterOptions);
+	}
 
-  visit(markdownAST, 'code', (node: RemarkNode) => {
-    node.type = 'html';
-    node.children = undefined;
+	let highlightCode: (() => Promise<void>) | null = null
 
-    if (!node.lang) {
-      node.value = `<pre class="shiki-unknown"><code>${node.value}</code></pre>`;
-      return;
-    }
+	async function findNextHighlightSnippetTask() {
+		visit(markdownAST, 'code', (node: RemarkNode) => {
+			highlightCode = async function () {
+				node.type = 'html';
+				node.children = [];
 
-    node.value = highlighter.codeToHtml!(node.value, node.lang as Lang);
-  });
+				let lang = node.lang
+				let inferredLang: Lang | undefined
 
-  return markdownAST;
+				let wasInferred: boolean = false
+
+				if (!lang) {
+					inferredLang = await (async () => {
+						if (typeof inferLang === "function") {
+							return await inferLang(node.value)
+						}
+
+						if (typeof inferLang === "string") {
+							return inferLang as Lang
+						}
+
+						return undefined
+					})()
+
+					if (inferredLang) {
+						lang = inferredLang
+						wasInferred = true
+					} else {
+						node.value = `<pre class="shiki-unknown"><code>${node.value}</code></pre>`;
+						return
+					}
+				}
+
+				const transformers: ShikiTransformer[] = [...(options.codeToHtmlOptions.transformers || [])]
+
+				if (wasInferred) {
+					transformers.push({
+						pre(node) {
+							this.addClassToHast(node, "shiki-lang-was-inferred")
+							node.properties["shiki-lang-was-inferred"] = "1"
+						},
+					})
+				}
+
+				if (highlighter) {
+					node.value = highlighter?.codeToHtml!(node.value, {
+						...options.codeToHtmlOptions,
+						lang: lang as Lang,
+						transformers: transformers,
+					});
+				} else {
+					node.value = await codeToHtml!(node.value, {
+						...options.codeToHtmlOptions,
+						lang: lang as Lang,
+						transformers: transformers,
+					});
+				}
+			}
+
+			return [EXIT]
+		});
+
+		if (highlightCode) {
+			await highlightCode()
+			highlightCode = null
+			await findNextHighlightSnippetTask()
+		}
+	}
+
+	await findNextHighlightSnippetTask()
+
+	return markdownAST;
 }
