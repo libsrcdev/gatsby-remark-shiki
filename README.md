@@ -28,7 +28,7 @@ plugins: [
         {
           resolve: `gatsby-remark-shiki`,
           options: {
-          // To create the highlighter instance with custom options, set to null if you are only using codeToHtml() API
+            // To create the highlighter instance with custom options, set to null if you are only using codeToHtml() API
             highlighterOptions: {
               // ...See Shiki docs for more
             },
