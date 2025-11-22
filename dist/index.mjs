@@ -198,172 +198,18 @@ function _ts_generator(thisArg, body) {
 // src/index.ts
 import { codeToHtml, createHighlighter } from "shiki";
 import { EXIT, visit } from "unist-util-visit";
-function index_default(_0, _1) {
+function remarkShiki(_0, _1) {
     return _async_to_generator(function(param, options) {
-        var markdownAST, highlighter, inferLang, highlightCode;
-        function findNextHighlightSnippetTask() {
-            return _async_to_generator(function() {
-                return _ts_generator(this, function(_state) {
-                    switch(_state.label){
-                        case 0:
-                            visit(markdownAST, "code", function(node) {
-                                highlightCode = function highlightCode() {
-                                    return _async_to_generator(function() {
-                                        var lang, inferredLang, wasInferred, transformers;
-                                        return _ts_generator(this, function(_state) {
-                                            switch(_state.label){
-                                                case 0:
-                                                    node.type = "html";
-                                                    node.children = [];
-                                                    lang = node.lang;
-                                                    wasInferred = false;
-                                                    if (!!lang) return [
-                                                        3,
-                                                        2
-                                                    ];
-                                                    return [
-                                                        4,
-                                                        function() {
-                                                            return _async_to_generator(function() {
-                                                                return _ts_generator(this, function(_state) {
-                                                                    switch(_state.label){
-                                                                        case 0:
-                                                                            if (!(typeof inferLang === "function")) return [
-                                                                                3,
-                                                                                2
-                                                                            ];
-                                                                            return [
-                                                                                4,
-                                                                                inferLang(node.value)
-                                                                            ];
-                                                                        case 1:
-                                                                            return [
-                                                                                2,
-                                                                                _state.sent()
-                                                                            ];
-                                                                        case 2:
-                                                                            if (typeof inferLang === "string") {
-                                                                                return [
-                                                                                    2,
-                                                                                    inferLang
-                                                                                ];
-                                                                            }
-                                                                            return [
-                                                                                2,
-                                                                                void 0
-                                                                            ];
-                                                                    }
-                                                                });
-                                                            })();
-                                                        }()
-                                                    ];
-                                                case 1:
-                                                    inferredLang = _state.sent();
-                                                    if (inferredLang) {
-                                                        lang = inferredLang;
-                                                        wasInferred = true;
-                                                    } else {
-                                                        node.value = '<pre class="shiki-unknown"><code>'.concat(node.value, "</code></pre>");
-                                                        return [
-                                                            2
-                                                        ];
-                                                    }
-                                                    _state.label = 2;
-                                                case 2:
-                                                    transformers = _to_consumable_array(options.codeToHtmlOptions.transformers || []);
-                                                    if (wasInferred) {
-                                                        transformers.push({
-                                                            pre: function pre(node2) {
-                                                                this.addClassToHast(node2, "shiki-lang-was-inferred");
-                                                                node2.properties["shiki-lang-was-inferred"] = "1";
-                                                            }
-                                                        });
-                                                    }
-                                                    if (!highlighter) return [
-                                                        3,
-                                                        3
-                                                    ];
-                                                    node.value = highlighter === null || highlighter === void 0 ? void 0 : highlighter.codeToHtml(node.value, _object_spread_props(_object_spread({}, options.codeToHtmlOptions), {
-                                                        lang: lang,
-                                                        transformers: transformers
-                                                    }));
-                                                    return [
-                                                        3,
-                                                        5
-                                                    ];
-                                                case 3:
-                                                    return [
-                                                        4,
-                                                        codeToHtml(node.value, _object_spread_props(_object_spread({}, options.codeToHtmlOptions), {
-                                                            lang: lang,
-                                                            transformers: transformers
-                                                        }))
-                                                    ];
-                                                case 4:
-                                                    node.value = _state.sent();
-                                                    _state.label = 5;
-                                                case 5:
-                                                    return [
-                                                        2
-                                                    ];
-                                            }
-                                        });
-                                    })();
-                                };
-                                return [
-                                    EXIT
-                                ];
-                            });
-                            if (!highlightCode) return [
-                                3,
-                                3
-                            ];
-                            return [
-                                4,
-                                highlightCode()
-                            ];
-                        case 1:
-                            _state.sent();
-                            highlightCode = null;
-                            return [
-                                4,
-                                findNextHighlightSnippetTask()
-                            ];
-                        case 2:
-                            _state.sent();
-                            _state.label = 3;
-                        case 3:
-                            return [
-                                2
-                            ];
-                    }
-                });
-            })();
-        }
+        var markdownAST;
         return _ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     markdownAST = param.markdownAST;
-                    highlighter = void 0;
-                    inferLang = options.inferLang;
-                    if (!options.highlighterOptions) return [
-                        3,
-                        2
-                    ];
                     return [
                         4,
-                        createHighlighter(options.highlighterOptions)
+                        recursivelyFindAndHighlightNextCodeNode(markdownAST, options)
                     ];
                 case 1:
-                    highlighter = _state.sent();
-                    _state.label = 2;
-                case 2:
-                    highlightCode = null;
-                    return [
-                        4,
-                        findNextHighlightSnippetTask()
-                    ];
-                case 3:
                     _state.sent();
                     return [
                         2,
@@ -373,4 +219,181 @@ function index_default(_0, _1) {
         });
     }).apply(this, arguments);
 }
-export { index_default as default };
+function recursivelyFindAndHighlightNextCodeNode(markdownAST, options) {
+    return _async_to_generator(function() {
+        var node;
+        return _ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    node = findNextCodeNodeFromMarkdownAST(markdownAST);
+                    if (!node) return [
+                        3,
+                        3
+                    ];
+                    return [
+                        4,
+                        highlightCodeNode(node, options)
+                    ];
+                case 1:
+                    _state.sent();
+                    return [
+                        4,
+                        recursivelyFindAndHighlightNextCodeNode(markdownAST, options)
+                    ];
+                case 2:
+                    _state.sent();
+                    _state.label = 3;
+                case 3:
+                    return [
+                        2
+                    ];
+            }
+        });
+    })();
+}
+function highlightCodeNode(node, options) {
+    return _async_to_generator(function() {
+        return _ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    node.type = "html";
+                    node.children = [];
+                    return [
+                        4,
+                        getNodeHighlightedHtml({
+                            codeSnippet: node.value,
+                            explicitLang: node.lang
+                        }, options)
+                    ];
+                case 1:
+                    node.value = _state.sent();
+                    return [
+                        2
+                    ];
+            }
+        });
+    })();
+}
+function getNodeHighlightedHtml(_0, _1) {
+    return _async_to_generator(function(param, options) {
+        var explicitLang, codeSnippet, highlighterOptions, codeToHtmlOptions, inferLang, highlighter, _tmp, inferredLang, lang, internalTransformers, _codeToHtmlOptions_transformers, userTransformers, transformers, effectiveCodeToHtmlOptions;
+        return _ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    explicitLang = param.explicitLang, codeSnippet = param.codeSnippet;
+                    highlighterOptions = options.highlighterOptions, codeToHtmlOptions = options.codeToHtmlOptions, inferLang = options.inferLang;
+                    if (!highlighterOptions) return [
+                        3,
+                        2
+                    ];
+                    return [
+                        4,
+                        createHighlighter(highlighterOptions)
+                    ];
+                case 1:
+                    _tmp = _state.sent();
+                    return [
+                        3,
+                        3
+                    ];
+                case 2:
+                    _tmp = void 0;
+                    _state.label = 3;
+                case 3:
+                    highlighter = _tmp;
+                    return [
+                        4,
+                        function() {
+                            return _async_to_generator(function() {
+                                return _ts_generator(this, function(_state) {
+                                    switch(_state.label){
+                                        case 0:
+                                            if (explicitLang) {
+                                                return [
+                                                    2,
+                                                    void 0
+                                                ];
+                                            }
+                                            if (!(typeof inferLang === "function")) return [
+                                                3,
+                                                2
+                                            ];
+                                            return [
+                                                4,
+                                                inferLang(codeSnippet)
+                                            ];
+                                        case 1:
+                                            return [
+                                                2,
+                                                _state.sent()
+                                            ];
+                                        case 2:
+                                            if (typeof inferLang === "string") {
+                                                return [
+                                                    2,
+                                                    inferLang
+                                                ];
+                                            }
+                                            return [
+                                                2,
+                                                void 0
+                                            ];
+                                    }
+                                });
+                            })();
+                        }()
+                    ];
+                case 4:
+                    inferredLang = _state.sent();
+                    lang = explicitLang !== null && explicitLang !== void 0 ? explicitLang : inferredLang;
+                    if (!lang) {
+                        return [
+                            2,
+                            '<pre class="shiki-unknown"><code>'.concat(codeSnippet, "</code></pre>")
+                        ];
+                    }
+                    internalTransformers = inferredLang ? [
+                        addInferredLangFlagToShikiPreElement
+                    ] : [];
+                    userTransformers = (_codeToHtmlOptions_transformers = codeToHtmlOptions.transformers) !== null && _codeToHtmlOptions_transformers !== void 0 ? _codeToHtmlOptions_transformers : [];
+                    transformers = _to_consumable_array(userTransformers).concat(_to_consumable_array(internalTransformers));
+                    effectiveCodeToHtmlOptions = _object_spread_props(_object_spread({}, codeToHtmlOptions), {
+                        lang: lang,
+                        transformers: transformers
+                    });
+                    if (highlighter) {
+                        return [
+                            2,
+                            highlighter.codeToHtml(codeSnippet, effectiveCodeToHtmlOptions)
+                        ];
+                    }
+                    return [
+                        4,
+                        codeToHtml(codeSnippet, effectiveCodeToHtmlOptions)
+                    ];
+                case 5:
+                    return [
+                        2,
+                        _state.sent()
+                    ];
+            }
+        });
+    }).apply(this, arguments);
+}
+function findNextCodeNodeFromMarkdownAST(markdownAST) {
+    var result = void 0;
+    visit(markdownAST, "code", function(node) {
+        result = node;
+        return [
+            EXIT
+        ];
+    });
+    return result;
+}
+var addInferredLangFlagToShikiPreElement = {
+    pre: function pre(node) {
+        this.addClassToHast(node, "shiki-lang-was-inferred");
+        node.properties["data-shiki-lang-was-inferred"] = "1";
+    }
+};
+export { remarkShiki as default };

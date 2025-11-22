@@ -1,19 +1,21 @@
-import { BundledHighlighterOptions, BundledLanguage, BundledTheme, CodeToHastOptions, ResolveBundleKey, ThemeRegistrationAny, StringLiteralUnion, HighlighterGeneric } from 'shiki';
+import { BundledHighlighterOptions, BundledLanguage, BundledTheme, CodeToHastOptions, ResolveBundleKey } from 'shiki';
 import { Lang } from 'shiki-languages';
-import { Node, Parent } from 'unist';
+import { Parent } from 'unist';
 
 type RemarkShikiOptions = {
     highlighterOptions: BundledHighlighterOptions<BundledLanguage, BundledTheme>;
     inferLang?: ((snippet: string) => Promise<Lang | undefined>) | string;
     codeToHtmlOptions: CodeToHastOptions<ResolveBundleKey<Lang>, ResolveBundleKey<BundledTheme>>;
 };
-type ThemeRegistration = ThemeRegistrationAny | StringLiteralUnion<BundledTheme>;
-interface RemarkNode extends Node, Parent {
+interface RemarkNode extends Parent {
     type: string;
     value: string;
     lang?: Lang;
 }
-type ShikiHighlighter = HighlighterGeneric<BundledLanguage, BundledTheme>;
-declare function export_default({ markdownAST }: any, options: RemarkShikiOptions): Promise<any>;
+declare function remarkShiki({ markdownAST }: any, options: RemarkShikiOptions): Promise<any>;
+type CodeSnippetNodeData = {
+    explicitLang?: string;
+    codeSnippet: string;
+};
 
-export { type RemarkNode, type RemarkShikiOptions, type ShikiHighlighter, type ThemeRegistration, export_default as default };
+export { type CodeSnippetNodeData, type RemarkNode, type RemarkShikiOptions, remarkShiki as default };
