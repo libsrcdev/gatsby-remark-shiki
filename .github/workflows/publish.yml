@@ -27,8 +27,10 @@ jobs:
           echo "Version: $VERSION"
 
           if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
-            echo "Version $VERSION of $NAME is already published on npm. Aborting."
-            exit 1
+            echo "### 🛑 Deployment aborted" >> $GITHUB_STEP_SUMMARY
+            echo "Version $VERSION of $NAME is already published on npm." >> $GITHUB_STEP_SUMMARY
+            echo "Skipping remaining steps." >> $GITHUB_STEP_SUMMARY
+            exit 0
           else
             echo "Version $VERSION of $NAME is NOT published. Continuing workflow."
           fi
