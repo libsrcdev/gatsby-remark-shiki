@@ -1,4 +1,4 @@
 src/
 .editorconfig
 *.md
-
+!README.md
