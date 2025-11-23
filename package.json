@@ -1,6 +1,6 @@
 {
   "name": "@libsrcdev/gatsby-remark-shiki",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "This plugin uses shiki to add code highlighting to pages that are built with gatsby-transformer-remark.",
   "keywords": [
     "gatsby",
