@@ -5,7 +5,7 @@ This plugin uses [`shiki`](https://github.com/octref/shiki) to add code highligh
 ## How to install
 
 ```
-npm i --save https://gitpkg.now.sh/libsrcdev/gatsby-remark-shiki?main
+npm i --save @libsrcdev/gatsby-remark-shiki
 ```
 
 ## When should I use this plugin?
