@@ -7,14 +7,31 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write  # Required for OIDC
+  id-token: write
   contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if package version is unpublished on npm
+        id: version-check
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          NAME=$(jq -r '.name' package.json)
+
+          echo "Package: $NAME"
+          echo "Version: $VERSION"
+
+          if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
+            echo "Version $VERSION of $NAME is already published on npm. Aborting."
+            exit 1
+          else
+            echo "Version $VERSION of $NAME is NOT published. Continuing workflow."
+          fi
 
       - uses: actions/setup-node@v4
         with:
