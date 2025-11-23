@@ -11,29 +11,37 @@ permissions:
   contents: read
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+      version: ${{ steps.read_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from package.json
+        id: read_version
+        run: echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+
+      - name: Check if version exists on npm
+        id: check
+        run: |
+          echo "Checking npm for version ${{ steps.read_version.outputs.version }}"
+
+          EXISTS=$(npm view $(jq -r '.name' package.json) versions --json | jq -e '.[] | select(.=="'${{ steps.read_version.outputs.version }}'")' || echo "no")
+
+          if [ "$EXISTS" = "no" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+
   publish:
+    needs: check-version
+    if: needs.check-version.outputs.should_publish == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check if package version is unpublished on npm
-        id: version-check
-        run: |
-          VERSION=$(jq -r '.version' package.json)
-          NAME=$(jq -r '.name' package.json)
-
-          echo "Package: $NAME"
-          echo "Version: $VERSION"
-
-          if npm view "$NAME@$VERSION" version > /dev/null 2>&1; then
-            echo "### 🛑 Deployment aborted" >> $GITHUB_STEP_SUMMARY
-            echo "Version $VERSION of $NAME is already published on npm." >> $GITHUB_STEP_SUMMARY
-            echo "Skipping remaining steps." >> $GITHUB_STEP_SUMMARY
-            exit 0
-          else
-            echo "Version $VERSION of $NAME is NOT published. Continuing workflow."
-          fi
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -43,6 +51,17 @@ jobs:
 
       - name: Update npm
         run: npm install -g npm@latest
+
       - run: npm ci
       - run: npm run build
-      - run: npm publish --access public
+
+      - name: Publish package
+        run: npm publish --access public
+
+  skip-notice:
+    needs: check-version
+    if: needs.check-version.outputs.should_publish == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Version already published
+        run: echo "Version ${{ needs.check-version.outputs.version }} already exists on npm. Skipping publish."
