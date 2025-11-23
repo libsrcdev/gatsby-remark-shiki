@@ -1,53 +1,62 @@
 {
-	"version": "0.2.1",
-	"license": "MIT",
-	"main": "dist/index.js",
-	"typings": "dist/index.d.ts",
-	"files": [
-		"dist"
-	],
-	"bugs": {
-		"url": "https://github.com/libsrcdev/gatsby-remark-shiki/issues"
-	},
-	"scripts": {
-		"dev": "nodemon --watch src  --ext js,ts,mjs,cjs,json --exec \"tsup src/index.ts --format esm,cjs --dts --silent\"",
-		"build": "tsup src/index.ts --format esm,cjs --dts",
-		"lint": "eslint . --ext .ts",
-		"test": "vitest",
-		"prepare": "npm run build"
-	},
-	"prettier": {
-		"printWidth": 80,
-		"semi": true,
-		"singleQuote": true,
-		"trailingComma": "es5"
-	},
-	"keywords": [
-		"gatsby",
-		"gatsby-plugin",
-		"shiki",
-		"remark"
-	],
-	"name": "gatsby-remark-shiki",
-  "author": "Alex Castro (@alexcmgit)",
-  "contributors": [
-    "Kirill Vasiltsov (@jlkiri)"
+  "name": "@libsrcdev/gatsby-remark-shiki",
+  "version": "0.2.1",
+  "description": "This plugin uses shiki to add code highlighting to pages that are built with gatsby-transformer-remark.",
+  "keywords": [
+    "gatsby",
+    "gatsby-plugin",
+    "shiki",
+    "remark"
   ],
-	"module": "dist/gatsby-remark-shiki.esm.js",
-	"homepage": "https://github.com/libsrcdev/gatsby-remark-shiki",
-	"devDependencies": {
-		"@swc/core": "^1.15.3",
-		"eslint": "^9.39.1",
-		"husky": "^9.1.7",
-		"nodemon": "^3.1.11",
-		"tslib": "^2.8.1",
-		"tsup": "^8.5.1",
-		"typescript": "^5.9.3"
-	},
-	"dependencies": {
-		"shiki": "^3.15.0",
-		"shiki-languages": "^0.2.7",
-		"shiki-themes": "^0.2.7",
-		"unist-util-visit": "^5.0.0"
-	}
+  "homepage": "https://github.com/libsrcdev/gatsby-remark-shiki",
+  "bugs": {
+    "url": "https://github.com/libsrcdev/gatsby-remark-shiki/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libsrcdev/gatsby-remark-shiki.git"
+  },
+  "license": "MIT",
+  "author": "@libsrcdev",
+  "contributors": [
+    {
+      "name": "Kirill Vasiltsov",
+      "url": "@jlkiri"
+    }
+  ],
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "nodemon --watch src  --ext js,ts,mjs,cjs,json --exec \"tsup src/index.ts --format esm,cjs --dts --silent\"",
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "lint": "eslint . --ext .ts",
+    "test": "vitest",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "shiki": "^3.15.0",
+    "shiki-languages": "^0.2.7",
+    "shiki-themes": "^0.2.7",
+    "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.15.3",
+    "eslint": "^9.39.1",
+    "husky": "^9.1.7",
+    "nodemon": "^3.1.11",
+    "tslib": "^2.8.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "typings": "dist/index.d.ts",
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "module": "dist/gatsby-remark-shiki.esm.js"
 }
